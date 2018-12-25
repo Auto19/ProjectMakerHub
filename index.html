@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html style='background-color: #ede8cf;'>
+    <head>
+        <style></style>
+    </head>
+    <body>
+        <div id="GamePanel">
+            <div id='title'>
+                <h1 style="font-family: sans-serif; margin-bottom: 0px;"><b><center>Featured Project: Snake</center></b></h1>
+            </div>
+            <center><canvas id="canvas" width=450 height=450></canvas></center>
+            <div id='subHeader_OR_GameDesc'>
+                <center><cite>Use the arrow keys to control the snake (black cubes) to eat food to grow (red cubes). Spacebar is pause and the reset button is in progress. Currently refresh the page.</cite></center>
+            </div>
+        </div>
+        
+        <div id="rest_of_site" width=1000 style='margin-left: auto; margin-right: auto; '>
+            <div id="DescriptionPanel">
+                <h1 style='font-family: sans-serif'><u>About</u></h1>
+                <p style='font-size: large; font-family: sans-serif;'>&nbsp;&nbsp;&nbsp;&nbsp; Hi, as you've noticed this site is quite bland. I made the choice to make it so simply for three reasons: One, it is a lot easier to hone it to exactly how I want it when I don’t use fancy website stuff like WordPress. Two, it is very simple and easy to understand. And Third, the best reason, I can host it on GitHub for free, which is always awesome. Who doesn’t love free stuff? And speaking of free stuff welcome to my project hub.  Here you’ll find my contact info which you can use to request a project.  Projects are anything that involves software from websites to bots.  One my favorite projects I’ve done is a Rick Roll program which opens the <a href='https://youtu.be/dQw4w9WgXcQ'> video</a>&nbsp;every time someone restarts their computer.  Like most of my projects you can find it on my GitHub below.  Projects are free (if I can put it on my GitHub) so don’t hesitate to ask. </p>
+            </div>
+            <div id="ContactInfo">
+                <h1 style='font-family: sans-serif'><u>Contact Info</u></h1>
+                <p style='font-size: large; font-family: sans-serif;'><b>Email: </b><a href="mailto:cafligg19@gmail.com">cafligg19@gmail.com</a></p>
+                <p style='font-size: large; font-family: sans-serif;'><b>GitHub: </b><a href="https://github.com/auto19">Auto19</a></p>
+                <p style='font-size: large; font-family: sans-serif;'><b>Phone: </b>678-612-4562</p>
+            </div>
+        </div>
+        
+        <script>
+            var canvas=document.getElementById("canvas");
+            var ctx=canvas.getContext("2d");
+            var game = true;
+            
+            var direction = "stop";
+            var grid = [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                        ]; //probably not the best way to do this
+            var snakeloc = [];
+            var foodloc = [[1,1]];
+            var lastbox;
+
+            
+            //Found on stack overflow and modified to correction
+            window.addEventListener("keydown", function(e) {
+            // space and arrow keys
+                if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+                    e.preventDefault();
+                }
+                if (e.keyCode == '38') { //up arrow
+                    direction = "up";
+                } else if (e.keyCode == '40') { //down arrow
+                    direction = "down";
+                } else if (e.keyCode == '37') { //left arrow
+                    direction = "left";
+                } else if (e.keyCode == '39') { //right arrow
+                    direction = "right";
+                } else if (e.keyCode == "32") { //space
+                    direction = "stop";
+                }
+                }, false);
+            
+            function SnakeBoardSetup() {  //Snake at 1 //No snake at 0 //Food at 2
+                grid = [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                        ]; 
+                grid[parseInt((grid.length)/2)][parseInt((grid[0].length)/2)] = 1.0;
+                snakeloc.push([parseInt((grid.length)/2),parseInt((grid[0].length)/2)]);                
+            }
+            
+            function visualizeBoard() {
+                var offsetSize = 7;
+                var cubeSizes = ((canvas.width / grid[0].length) - offsetSize) - 1; 
+                
+                //take SnakeBoard and visualize as numbers
+                /* 
+                document.getElementById("board2D1").innerHTML = grid[0];
+                document.getElementById("board2D2").innerHTML = grid[1];
+                document.getElementById("board2D3").innerHTML = grid[2];
+                document.getElementById("board2D4").innerHTML = grid[3];
+                document.getElementById("board2D5").innerHTML = grid[4];
+                document.getElementById("board2D6").innerHTML = grid[5];
+                document.getElementById("board2D7").innerHTML = grid[6];
+                document.getElementById("board2D8").innerHTML = grid[7]; */
+                
+                
+                ctx.shadowColor = '#999';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 8;
+                ctx.shadowOffsetY = 8;
+                ctx.fillStyle = 'white';
+                //This line below... 
+                ctx.fillRect(0, 0,((cubeSizes * grid[0].length) + (offsetSize * grid[0].length))-offsetSize, (cubeSizes * grid.length) + (offsetSize * grid.length) - offsetSize);
+                
+                ctx.shadowColor = "transparent";
+                
+                
+                for(var i = 0; i < snakeloc.length; i++) {
+                    var sx = snakeloc[i][0];
+                    var sy = snakeloc[i][1];
+                    ctx.fillStyle = 'black';
+                    //x, y, size, size (its a cube so height and width shooould be the same)
+                    ctx.fillRect((sx*cubeSizes) + (offsetSize*sx), (sy*cubeSizes) + (sy*offsetSize), cubeSizes, cubeSizes);
+                    //ctx.fillRect((sx*cubeSizes) + offsetSize, (sy*cubeSizes) + offsetSize, cubeSizes, cubeSizes);
+                    
+                }
+                
+                for(var j = 0; j < foodloc.length; j++) {
+                    var foodx = foodloc[j][0];
+                    var foody = foodloc[j][1];
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect((foodx*cubeSizes) + (offsetSize*foodx), (foody*cubeSizes) + (offsetSize*foody), cubeSizes, cubeSizes);
+                    //ctx.fillRect((foodx*cubeSizes) + offsetSize, (foody*cubeSizes) + offsetSize, cubeSizes, cubeSizes);
+                }
+                
+            }
+            
+            function checkbounds() { //and check for food
+                if(snakeloc[0][0] < 0) { // x of snake head (its backwards on grid?)
+                    game = false;
+                    resetBoard();
+                } else if (snakeloc[0][0] >= grid[0].length) {
+                    game = false;
+                    resetBoard();
+                }
+                
+                //ERRORS HERE
+                if(snakeloc[0][1] < 0) {
+                    game = false;
+                    resetBoard();
+                } else if(snakeloc[0][1] >= grid.length) {
+                    game = false;
+                    resetBoard();
+                }
+                
+                //UNTESTED //TODO (probably works) not touching it for now
+                for(var i = 1; i < snakeloc.length; i++) {
+                    if(snakeloc[0][1]==snakeloc[i][1]) {
+                        if(snakeloc[0][0]==snakeloc[i][0]) {
+                            game = false;
+                            resetBoard();
+                        }
+                    }
+                }
+                
+                //TESTED AND COMPLETED
+                if(snakeloc[0][0]==foodloc[0][0]) {
+                    if(snakeloc[0][1]==foodloc[0][1]) {
+                        snakeloc.push(snakeloc[0]); //add 2 to length
+                        snakeloc.push(snakeloc[0]);
+                        newFoodPlacement();
+                    }
+                }
+            }
+            
+            function newFoodPlacement() {
+                foodloc[0] = [parseInt(Math.random() * grid[0].length), parseInt(Math.random() * grid.length)];
+            }
+            
+            //https://stackoverflow.com/questions/8073673/how-can-i-add-new-array-elements-at-the-beginning-of-an-array-in-javascript
+            //description everyone should read for arrays, can't wait till I try to make 3D snake....
+            function moveSnake() {
+                if(direction=="up") {
+                    snakeloc.unshift([snakeloc[0][0],snakeloc[0][1] - 1]);
+                    lastbox = snakeloc.pop();
+                } else if(direction=="down") {
+                    snakeloc.unshift([snakeloc[0][0],snakeloc[0][1] + 1]);
+                    lastbox = snakeloc.pop();
+                } else if(direction=="right") {
+                    snakeloc.unshift([snakeloc[0][0] + 1,snakeloc[0][1]]);
+                    lastbox = snakeloc.pop();
+                } else if(direction=="left") {
+                    snakeloc.unshift([snakeloc[0][0] - 1,snakeloc[0][1]]);
+                    lastbox = snakeloc.pop();
+                }
+                
+                updateBoard();
+            }
+            
+            function updateBoard() {
+                grid = [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                        ];
+                
+                var foodx = foodloc[0][0];
+                var foody = foodloc[0][1];
+                grid[foody][foodx] = 2;
+                
+                for(var i = 0; i < snakeloc.length; i++) {
+                    var x = snakeloc[i][0];
+                    var y = snakeloc[i][1];
+                    grid[y][x] = 1;
+                }
+            }
+            
+            function resetBoard() {
+                //still need to fix Y out of bounds error before this can be called to reset
+                /* direction = "stop";
+                snakeloc = [];
+                SnakeBoardSetup(); */
+            }
+            
+            function SnakeController() {
+                if(game===true) {
+                    moveSnake();
+                    checkbounds();
+                    visualizeBoard();
+                } else if (game===false) {
+                    direction = "stop";
+                }
+            }
+        </script>
+        <script>
+            SnakeBoardSetup();
+            
+            
+            //(180); //of course clock cycle doesn't work in the same <script tag as the others
+            var ClockCycle = setInterval(Timer, 200);
+
+            function Timer() {
+                SnakeController();
+            }
+        </script>
+        
+        <!-- 
+        <p id="board2D1"></p>
+        <p id="board2D2"></p>
+        <p id="board2D3"></p>
+        <p id="board2D4"></p>
+        <p id="board2D5"></p>
+        <p id="board2D6"></p>
+        <p id="board2D7"></p>
+        <p id="board2D8"></p> -->
+    </body>
+</html>
